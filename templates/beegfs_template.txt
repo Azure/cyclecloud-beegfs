@@ -1,0 +1,283 @@
+############################
+## Configuration File     ##
+############################
+
+
+[parameters About]
+Order = 1
+
+    [[parameters About BeeGFS]]
+
+        [[[parameter BeeGFSsection]]]
+        HideLabel = true
+        Config.Plugin = pico.widget.HtmlTemplateWidget
+        Config.Template := "<table><tr><td><img src='https://www.beegfs.io/content/wp-content/uploads/pics/beegfs-logo/BeeGFS_Logo_137x87.png' width='137' height='87'></td></tr><tr><td><p>BeeGFS is a parallel cluster file system. See the <a href=\"http://www.beegfs.io/content/\" target=\"_blank\">BeeGFS project site</a>for an overview.</p></td></tr></table>"
+
+[parameters General Settings]
+Order = 10
+
+    [[parameters Cloud Service Provider Configuration]]
+    Description = Configure the Cloud Provider account options.
+    Order = 10
+
+        [[[parameter CloudProvider]]]
+        Label = Cloud Provider
+        ParameterType = Cloud.Provider
+        DefaultValue = azure
+        Hidden = true
+
+        [[[parameter Credentials]]]
+        Description = The credentials for the cloud provider
+        ParameterType = Cloud.Credentials
+
+        [[[parameter Region]]]
+        Label = Region
+        Description = Deployment Location
+        ParameterType = Cloud.Region
+        DefaultValue = eastus
+
+
+[parameters BeeGFS]
+Order = 15
+
+    [[parameters BeeGFS Settings]]
+   
+        Description = Various knobs for managing BeeGFS
+        Order = 10
+
+        [[[parameter StorageDiskSize]]]
+        Label = OSS Disk Size 
+        Description = Size (GB) of each 3 premium disk attached to each OSS. Disks are raided in RAID5 configuration.
+        DefaultValue = 1024
+
+        [[[parameter BeeGFSRoot ]]]
+        Label = BeeGFS Dir 
+        Description = The root directory for BeeGFS data
+        DefaultValue = /data/beegfs
+[parameters Cluster Software]
+Order = 20
+
+    [[parameters Image]]
+    Description = "Specify the image to use"
+    Order = 10
+        [[[parameter ImagePublisher]]]
+        Label = Publisher
+        Description = The organization that created the image. 
+        DefaultValue = OpenLogic 
+
+        [[[parameter ImageOffer]]]
+        Label = Offer
+        Description = Name of a group of related images created by a publisher.
+        DefaultValue = CentOS
+
+        [[[parameter ImageVersion]]]
+        Label = Version
+        Description = The version number of an image SKU
+        DefaultValue = 7.4.20180118
+
+        [[[parameter ImageSku]]]
+        Label = SKU
+        Description =  An instance of an offer, such as a major release of a distribution.
+        DefaultValue = 7.4
+
+        [[[parameter ImageOS]]]
+        Label = OS
+        Description = Operating System (Linux/Windows)
+        DefaultValue = Linux
+        
+
+    [[parameters Node Access]]
+    Description = "Specify the credentials required for access to the node.  The Keypair Path specifies the path on local machines for cyclecloud CLI access."
+    Order = 20
+
+        [[[parameter keypairLocation]]]
+        Label = Keypair Path
+        Description = The path to the keypair
+        DefaultValue = ~/.ssh/cyclecloud.pem
+        Required = True
+
+[parameters Compute Backend]
+Order = 30
+
+    [[parameters VM Types]]
+    Description = "Specify the VM types to use for the Manager, Metadata and Storage Servers"
+    Order = 10
+
+        [[[parameter ManagerVMType]]]
+        Label = Manager VM Type
+        Description = The VM type for BeeGFS manager node.
+        ParameterType = Cloud.MachineType
+            [[[[record Config.ProviderDefaults]]]]
+            Azure = Standard_D2_v3
+
+        [[[parameter MetadataVMType]]]
+        Label = Metadata VM Type
+        Description = The VMType type for metadata nodes
+        ParameterType = Cloud.MachineType
+            [[[[record Config.ProviderDefaults]]]]
+            Azure = Standard_D2_v3
+
+        [[[parameter StorageVMType]]]
+        Label = Storage VM Type Type
+        Description = The VMType type for storage nodes
+        ParameterType = Cloud.MachineType
+            [[[[record Config.ProviderDefaults]]]]
+            Azure = Standard_DS3_v2
+
+        [[[parameter ClientVMType]]]
+        Label = Client VM Type
+        Description = The VMType type for client nodes, for testing 
+        ParameterType = Cloud.MachineType
+            [[[[record Config.ProviderDefaults]]]]
+            Azure = Standard_D2_v3
+
+    [[parameters Cluster Size]]
+    Description = "The size of the BeeGFS cluster to start"
+    Order = 20
+
+        [[[parameter InitialStorageCount]]]
+        Label = Storage VM Count
+        Description = The total number of storage VMs to start
+        DefaultValue = 2
+        Config.Plugin = pico.form.NumberTextBox
+        Config.MinValue = 0
+        Config.MaxValue = 10
+        Config.IntegerOnly = true
+
+        [[[parameter InitialMetadataCount]]]
+        Label = MDS VM Count
+        Description = The number of metadata servers to launch at startup
+        DefaultValue = 0
+        Config.Plugin = pico.form.NumberTextBox
+        Config.MinValue = 0
+        Config.MaxValue = 8
+        Config.IntegerOnly = true
+
+        [[[parameter InitialClientCount]]]
+        Label = Client VM Count
+        Description = The number of client VMs to launch at startup
+        DefaultValue = 1
+        Config.Plugin = pico.form.NumberTextBox
+        Config.MinValue = 0
+        Config.MaxValue = 8
+        Config.IntegerOnly = true
+
+
+[parameters Networking]
+Order = 40
+
+    [[parameters General]]
+    Order = 10
+
+        [[[parameter ReturnProxy]]]
+        Label = Return Proxy
+        DefaultValue = true
+        Widget.Plugin = pico.form.BooleanCheckBox
+        Widget.Label = Allow cloud instances to report back their state
+
+        [[[parameter ManagerPublicIp]]]
+        Label = Manager has Public IP
+        DefaultValue = true
+        Widget.Plugin = pico.form.BooleanCheckBox
+        Widget.Label = Assign a public ip address to the master node
+
+    [[parameters Virtual Network Configuration]]
+    Order = 40
+    Conditions.Excluded := CloudProvider !== "Azure"
+
+        [[[parameter SubnetId]]]
+        Label = Subnet ID
+        Description = Subnet Resource Path (ResourceGroup/VirtualNetwork/Subnet)
+        Conditions.Required := CloudProvider === "Azure"
+        Conditions.Excluded := CloudProvider !== "Azure"
+        ParameterType = Azure.Subnet
+
+
+[cluster beegfs]
+FormLayout = selectionpanel
+Category = Infrastructure
+IconUrl = https://www.beegfs.io/content/wp-content/uploads/pics/beegfs-logo/BeeGFS_Logo_137x87.png
+
+    # defines default values used for all nodes. This is inherited automatically by all nodes.
+    # You can create other nodes like this by adding Abstract = true to them and adding
+    # Extends = foo to the nodes that should inherit the definitions from foo.
+    [[node defaults]]
+    Credentials = $Credentials
+
+    Azure.Publisher = $ImagePublisher
+    Azure.Offer = $ImageOffer
+    Azure.ImageVersion = $ImageVersion
+    Azure.Sku = $ImageSku
+    Azure.OS = $ImageOS
+
+    InstallJetpack = true
+    JetpackVersion = 6.8.0
+    JetpackPlatform = centos-7
+    AwaitInstallation = true
+
+    SubnetId = $SubnetId
+    Region = $Region
+    KeyPairLocation = $keypairLocation
+
+        [[[network-interface eth0]]]
+        AssociatePublicIpAddress = false
+
+        [[[configuration]]]
+        # You can specify Chef attributes using dot notation if needed. For example, you
+        # can use it to change the default CycleServer admin password (defaults to cluster name):
+        beegfs.root_dir = $BeeGFSRoot
+
+        [[[cluster-init beegfs:default:1.0.0]]]
+
+    [[node manager]]
+    MachineType = $ManagerVMType
+    IsReturnProxy = $ReturnProxy
+
+        [[[network-interface eth0]]]
+        AssociatePublicIpAddress = $ManagerPublicIp
+
+        [[[cluster-init beegfs:manager:1.0.0]]]
+
+    [[nodearray storage]]
+    MachineType = $StorageVMType
+    
+    # The initial number of cores of this type to start when the cluster starts
+    InitialCount= $InitialStorageCount
+
+        [[[volume disk1]]]
+        Size = $StorageDiskSize
+        SSD = true
+        Mount = beegfs
+
+        [[[volume disk2]]]
+        Size = $StorageDiskSize
+        SSD = true
+        Mount = beegfs
+
+        [[[volume disk3]]]
+        Size = $StorageDiskSize
+        SSD = true
+        Mount = beegfs
+
+        [[[configuration cyclecloud.mounts.beegfs]]]
+        mountpoint = $BeeGFSRoot
+        fs_type = ext4
+        raid_level = 5
+
+        [[[cluster-init beegfs:storage:1.0.0]]]
+
+    [[nodearray metadata]]
+    MachineType = $MetadataVMType
+
+    # The initial number of cores of this type to start when the cluster starts
+    InitialCount= $InitialMetadataCount
+
+        [[[cluster-init beegfs:metadata:1.0.0]]]
+
+    [[nodearray client]]
+    MachineType = $ClientVMType
+
+    # The initial number of cores of this type to start when the cluster starts
+    InitialCount= $InitialClientCount
+
+        [[[cluster-init beegfs:client:1.0.0]]]

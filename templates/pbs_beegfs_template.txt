@@ -1,0 +1,266 @@
+############################
+## SGE Configuration File ##
+############################
+
+[parameters General Settings]
+Order = 10
+
+    [[parameters Cloud Service Provider Configuration]]
+    Description = Configure the Cloud Provider account options.
+    Order = 10
+
+        [[[parameter Credentials]]]
+        Description = The credentials for the cloud provider
+        ParameterType = Cloud.Credentials
+
+        [[[parameter Region]]]
+        Label = Region
+        Description = Deployment Location
+        ParameterType = Cloud.Region
+
+        [[[parameter CloudProvider]]]
+        ParameterType = Cloud.Provider
+        Hidden = true
+        Value = Azure
+
+
+[parameters Cluster Software]
+Order = 20
+
+    [[parameters Image]]
+    Description = "Specify the image to use"
+    Order = 5
+        [[[parameter ImagePublisher]]]
+        Label = Publisher
+        Description = The organization that created the image. 
+        DefaultValue = OpenLogic 
+
+        [[[parameter ImageOffer]]]
+        Label = Offer
+        Description = Name of a group of related images created by a publisher.
+        DefaultValue = CentOS
+
+        [[[parameter ImageVersion]]]
+        Label = Version
+        Description = The version number of an image SKU
+        DefaultValue = 7.4.20180118
+
+        [[[parameter ImageSku]]]
+        Label = SKU
+        Description =  An instance of an offer, such as a major release of a distribution.
+        DefaultValue = 7.4
+
+        [[[parameter ImageOS]]]
+        Label = OS
+        Description = Operating System (Linux/Windows)
+        DefaultValue = Linux
+        
+    
+    [[parameters Software]]
+    Description = "Specify the scheduling software, and base OS installed on all nodes, and optionally the cluster-init and chef versions from your Locker."
+    Order = 10
+            
+        [[[parameter ClusterSpecProject]]]
+        Label = ClusterInit Project
+        DefaultValue = gromacs
+        Description = "If set, apply a cluster-init project to use. Runs the default spec of the project. Leave blank to run without cluster-init."
+
+    [[parameters Node Access]]
+    Description = "Specify the credentials required for access to the node.  The Keypair Path specifies the path on local machines for cyclecloud CLI access."
+    Order = 20
+
+        [[[parameter keypairLocation]]]
+        Label = Keypair Path
+        Description = The path to the keypair
+        DefaultValue = ~/.ssh/cyclecloud.pem
+        Required = True
+
+        [[[parameter Username]]]
+        Label = Username
+        Description = The username for the built-in local user on all nodes for direct ssh access.
+        DefaultValue = cyclecloud
+        Conditions.Required := (CloudProvider === "Azure" && startswith("cycle.image.win", ImageName))
+        Conditions.Excluded := !(CloudProvider === "Azure" && startswith("cycle.image.win", ImageName))
+
+[parameters BeeGFS]
+Order = 25
+    [[parameters BeegFS Settings]]        
+    Description = "Use a BeeGFS cluster as a NAS. Settings for defining the BeeGFS cluster"
+
+        [[[parameter BeeGFSClusterName]]]
+        Label = BeeGFS Cluster
+        Description = Name of the BeeGFS cluster to connect to. The BeeGFS cluster should be orchestrated by the same CycleCloud Server
+        Required = True
+        Config.Plugin = pico.form.QueryDropdown
+        Config.Query = select ClusterName as Name from Cloud.Node where Cluster().IsTemplate =!= True && ClusterInitSpecs["beegfs:manager"] isnt undefined
+        Config.SetDefault = false
+
+        [[[parameter BeeGFSMountPt]]]
+        Label = BeeGFS MountPt
+        Description = The mount point to mount the BeeGFS file server on.
+        DefaultValue = /mnt/beegfs
+        Required = True
+
+[parameters Compute Backend]
+Order = 30
+
+    [[parameters Instance Types]]
+    Description = "The cluster, in this case, has two roles: the scheduler master-node with shared filer and the execute hosts. Configure which instance types to use based on the requirements of your application."
+    Order = 10
+
+        [[[parameter MasterMachineType]]]
+        Label = Master Type
+        Description = The machine type for scheduler master and shared filer.
+        ParameterType = Cloud.MachineType
+            [[[[record Config.ProviderDefaults]]]]
+            Azure = Standard_DS13-2_v2
+
+        [[[parameter ExecuteMachineType]]]
+        Label = Execute Type
+        Description = The machine type for execute nodes
+        ParameterType = Cloud.MachineType
+            [[[[record Config.ProviderDefaults]]]]
+            Azure = Standard_H16r
+
+    [[parameters Auto-Scaling]]
+    Description = "The cluster can autoscale to the workload, adding execute hosts as jobs are queued. To enable this check the box below and choose the initial and maximum core counts for the cluster"
+    Order = 20
+
+        [[[parameter Autoscale]]]
+        Label = Autoscale
+        Description = "Enable autoscaling. This selection is fixed at cluster start. Changing this after the cluster has started has no effect."
+        DefaultValue = true
+        Widget.Plugin = pico.form.BooleanCheckBox
+        Widget.Label = Start and stop execute instances automatically. This selection is fixed at cluster start. Changing this after the cluster has started has no effect.
+
+        [[[parameter AutoStop]]]
+        Label = AutoStop
+        Description = "Enable VM autostopping. This selection is fixed at VM start. Changing this after the VM has started has no effect. Disabling autostop is useful for testing and debugging."
+        DefaultValue = true
+        Widget.Plugin = pico.form.BooleanCheckBox
+        Widget.Label = Enable VM autostopping. This selection is fixed at VM start. Changing this after the VM has started has no effect. Disabling autostop is useful for testing and debugging.
+
+        [[[parameter InitialExecuteCoreCount]]]
+        Label = Initial Cores
+        Description = The number of execute cores to launch on startup
+        DefaultValue = 0
+        Config.Plugin = pico.form.NumberTextBox
+        Config.MinValue = 0
+        Config.MaxValue = 5000
+        Config.IntegerOnly = true
+
+        [[[parameter MaxExecuteCoreCount]]]
+        Label = Max Cores
+        Description = The total number of execute cores to start
+        DefaultValue = 10
+        Config.Plugin = pico.form.NumberTextBox
+        Config.MinValue = 1
+        Config.MaxValue = 5000
+        Config.IntegerOnly = true
+
+
+[parameters Networking]
+Order = 40
+    
+    [[parameters General]]
+    Order = 10
+
+        [[[parameter ReturnProxy]]]
+        Label = Return Proxy
+        DefaultValue = true
+        Widget.Plugin = pico.form.BooleanCheckBox
+        Widget.Label = Allow cloud instances to report back their state
+
+    [[parameters Azure Virtual Network Configuration]]
+    Order = 40
+
+        [[[parameter azureSubnetId]]]
+        Label = Subnet ID
+        Description = Subnet Resource Path (ResourceGroup/VirtualNetwork/Subnet)
+        ParameterType = Azure.Subnet
+
+[cluster PBS-BeeGFS]
+FormLayout = selectionpanel
+IconUrl = https://www.beegfs.io/content/wp-content/uploads/pics/beegfs-logo/BeeGFS_Logo_137x87.png
+
+# Enable/disable autoscaling
+# The scheduler load will determine the number of execute machines that are started, machines will terminate themselves if they are idle
+# and approaching a billing cycle.
+Autoscale = $Autoscale
+
+    # defines default values used for all nodes. This is inherited automatically by all nodes.
+    # You can create other nodes like this by adding Abstract = true to them and adding
+    # Extends = foo to the nodes that should inherit the definitions from foo.
+    [[node defaults]]
+    Credentials = $Credentials    
+    Azure.Publisher = $ImagePublisher
+    Azure.Offer = $ImageOffer
+    Azure.ImageVersion = $ImageVersion
+    Azure.Sku = $ImageSku
+    Azure.OS = $ImageOS
+
+    InstallJetpack = true
+    JetpackVersion = 6.8.0
+    JetpackPlatform = centos-7
+    AwaitInstallation = true
+
+    SubnetId = $azureSubnetId
+    Region = $Region
+
+    KeyPairLocation = $keypairLocation
+
+    Username = $Username
+
+        [[[configuration]]]
+        cyclecloud.fail2ban.enabled = false
+        pbspro.version = 14.3.1-0
+        beegfs.client.cluster_name = $BeeGFSClusterName
+        beegfs.client.mount_point = $BeeGFSMountPt
+
+        [[[cluster-init default]]]
+        Project = $ClusterSpecProject 
+        Spec = default
+
+        [[[cluster-init beegfs:default:1.0.0]]]
+        [[[cluster-init beegfs:client:1.0.0]]]
+
+    [[node master]]
+    MachineType = $MasterMachineType
+    IsReturnProxy = $ReturnProxy
+
+        [[[configuration]]]
+        run_list = role[pbspro_master_role]
+
+        # Configure Azure external input endpoints (for example SSH)
+        [[[input-endpoint SSH]]]
+        PrivatePort = 22
+        PublicPort = 22
+
+        [[[input-endpoint ganglia]]]
+        PrivatePort = 8652
+        PublicPort = 8652        
+
+    [[nodearray executedefaults]]
+    Abstract = true
+
+    # The initial number of cores of this type to start when the cluster starts
+    InitialCoreCount= $InitialExecuteCoreCount
+
+    # The maximum number of cores to start when the cluster is configured for autoscaling
+    MaxCoreCount = $MaxExecuteCoreCount
+
+        [[[configuration]]]
+        run_list = role[pbspro_execute_role]
+        cyclecloud.cluster.autoscale.stop_enabled = $AutoStop
+
+        [[[input-endpoint SSH]]]
+        PrivatePort = 22
+        PublicPort = 55100
+        
+    [[nodearray execute]]
+    AwaitInstallation = true
+    ImageName = cycle.image.centos7
+    Extends = executedefaults
+    MachineType = $ExecuteMachineType
+
+    
