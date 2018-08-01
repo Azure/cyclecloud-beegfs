@@ -96,29 +96,25 @@ Order = 30
         Label = Manager VM
         Description = The VM type for BeeGFS manager node.
         ParameterType = Cloud.MachineType
-            [[[[record Config.ProviderDefaults]]]]
-            Azure = Standard_D2_v3
+        DefaultValue = Standard_D2_v3
 
         [[[parameter MetadataVMType]]]
         Label = Metadata VM
         Description = The VMType type for metadata nodes
         ParameterType = Cloud.MachineType
-            [[[[record Config.ProviderDefaults]]]]
-            Azure = Standard_D2_v3
+        DefaultValue = Standard_D2_v3
 
         [[[parameter StorageVMType]]]
         Label = Storage VM
         Description = The VMType type for storage nodes
         ParameterType = Cloud.MachineType
-            [[[[record Config.ProviderDefaults]]]]
-            Azure = Standard_DS3_v2
+        DefaultValue = Standard_DS3_v2
 
         [[[parameter ClientVMType]]]
         Label = Client VM
         Description = The VMType type for client nodes, for testing 
         ParameterType = Cloud.MachineType
-            [[[[record Config.ProviderDefaults]]]]
-            Azure = Standard_D2_v3
+        DefaultValue = Standard_D2_v3
 
     [[parameters Cluster Size]]
     Description = "The size of the BeeGFS cluster to start"
