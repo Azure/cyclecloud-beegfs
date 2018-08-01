@@ -84,17 +84,6 @@ Order = 20
         Label = OS
         Description = Operating System (Linux/Windows)
         DefaultValue = Linux
-        
-
-    [[parameters Node Access]]
-    Description = "Specify the credentials required for access to the node.  The Keypair Path specifies the path on local machines for cyclecloud CLI access."
-    Order = 20
-
-        [[[parameter keypairLocation]]]
-        Label = Keypair Path
-        Description = The path to the keypair
-        DefaultValue = ~/.ssh/cyclecloud.pem
-        Required = True
 
 [parameters Compute Backend]
 Order = 30
@@ -104,28 +93,28 @@ Order = 30
     Order = 10
 
         [[[parameter ManagerVMType]]]
-        Label = Manager VM Type
+        Label = Manager VM
         Description = The VM type for BeeGFS manager node.
         ParameterType = Cloud.MachineType
             [[[[record Config.ProviderDefaults]]]]
             Azure = Standard_D2_v3
 
         [[[parameter MetadataVMType]]]
-        Label = Metadata VM Type
+        Label = Metadata VM
         Description = The VMType type for metadata nodes
         ParameterType = Cloud.MachineType
             [[[[record Config.ProviderDefaults]]]]
             Azure = Standard_D2_v3
 
         [[[parameter StorageVMType]]]
-        Label = Storage VM Type Type
+        Label = Storage VM
         Description = The VMType type for storage nodes
         ParameterType = Cloud.MachineType
             [[[[record Config.ProviderDefaults]]]]
             Azure = Standard_DS3_v2
 
         [[[parameter ClientVMType]]]
-        Label = Client VM Type
+        Label = Client VM
         Description = The VMType type for client nodes, for testing 
         ParameterType = Cloud.MachineType
             [[[[record Config.ProviderDefaults]]]]
@@ -217,7 +206,8 @@ IconUrl = https://www.beegfs.io/content/wp-content/uploads/pics/beegfs-logo/BeeG
 
     SubnetId = $SubnetId
     Region = $Region
-    KeyPairLocation = $keypairLocation
+    KeyPairLocation = ~/.ssh/cyclecloud.pem
+    UsePublicNetwork = $ManagerPublicIp
 
         [[[network-interface eth0]]]
         AssociatePublicIpAddress = false
