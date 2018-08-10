@@ -88,7 +88,7 @@ Order = 1
         [[[parameter beegfs]]]
         HideLabel = true
         Config.Plugin = pico.widget.HtmlTemplateWidget
-        Config.Template := "<table><tr><td><img src='https://www.beegfs.io/content/wp-content/uploads/pics/beegfs-logo/BeeGFS_Logo_137x87.png' width='137' height='87'></td></tr><tr><td><p>BeeGFS is a parallel cluster file system. See the <a href=\"http://www.beegfs.io/content/\" target=\"_blank\">BeeGFS project site</a>for an overview.</p></td></tr></table>"
+        Config.Template := "<table><tr><td><img src='https://www.beegfs.io/content/wp-content/uploads/pics/beegfs-logo/BeeGFS_Logo_137x87.png' width='137' height='87'></td></tr><tr><td><p>BeeGFS is a parallel cluster file system. See the <a href=\"http://www.beegfs.io/content/\" target=\"_blank\">BeeGFS project site</a> for an overview.</p></td></tr></table>"
 
 [parameters Required Settings]
 Order = 10
