@@ -6,7 +6,6 @@
 [cluster beegfs]
 FormLayout = selectionpanel
 Category = Infrastructure
-IconUrl = https://www.beegfs.io/content/wp-content/uploads/pics/beegfs-logo/BeeGFS_Logo_137x87.png
 
     [[node defaults]]
     UsePublicNetwork = $UsePublicNetwork
