@@ -3,20 +3,21 @@ include_recipe "::default"
 
 # Problem with some images running an outdated kernel version,
 # where the kernel headers don't exist in the repos anymore.
-# mitigate some failures by checking if kernel-devel has already been installed
+# Enable the Centos Vault repos
 
-# Try specifing the kernel version and doing a yum install.
-# ignore failues in this first try
+# Add the centos vault mirrors for the platform version we are on
+%w(os updates).each do |id|
+  yum_repository "centos-#{node[:platform_version]}-#{id}" do
+    baseurl "http://vault.centos.org/#{node[:platform_version]}/#{id}/$basearch/"
+    gpgkey "file:///etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-#{node[:platform_version].to_i}"
+    action :create
+    not_if "yum list kernel-devel-$(uname -r)"
+  end
+end 
+
+# Install the kernel-devel package for our platform
 execute "Installing kernel-devel version that matches kernel" do
   command 'yum install -y "kernel-devel-uname-r == $(uname -r)"'
-  not_if "rpm -qa | grep kernel-devel | grep $(uname -r)"
-  ignore_failure true
-end
-
-# If the above fails, update the centos-release, enable all repos
-# and try installing kernel-devel again
-execute "Enabling Centos vault repos and installing kernel-devel version that matches kernel" do
-  command 'yum install -y centos-release; yum install -y --enablerepo=C*-base --enablerepo=C*-updates kernel-devel-$(uname -r)'
   not_if "rpm -qa | grep kernel-devel | grep $(uname -r)"
 end
 
