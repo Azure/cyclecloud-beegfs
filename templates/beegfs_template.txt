@@ -5,7 +5,7 @@
 
 [cluster beegfs]
 FormLayout = selectionpanel
-Category = Infrastructure
+Category = Filesystems
 
     [[node defaults]]
     UsePublicNetwork = $UsePublicNetwork
