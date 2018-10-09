@@ -41,25 +41,24 @@ Category = Filesystems
     # The initial number of cores of this type to start when the cluster starts
     InitialCount= $InitialStorageCount
 
+    Azure.AllocationMethod = Standalone
+
         [[[volume disk1]]]
         Size = $StorageDiskSize
         SSD = true
         Mount = beegfs
+        Persistent = true
 
         [[[volume disk2]]]
         Size = $StorageDiskSize
         SSD = true
         Mount = beegfs
-
-        [[[volume disk3]]]
-        Size = $StorageDiskSize
-        SSD = true
-        Mount = beegfs
+        Persistent = true
 
         [[[configuration cyclecloud.mounts.beegfs]]]
         mountpoint = $BeeGFSRoot
         fs_type = ext4
-        raid_level = 5
+        raid_level = 0
 
         [[[cluster-init beegfs:storage:1.0.0]]]
 
@@ -68,6 +67,7 @@ Category = Filesystems
 
     # The initial number of cores of this type to start when the cluster starts
     InitialCount= $InitialMetadataCount
+    Azure.AllocationMethod = Standalone
 
         [[[cluster-init beegfs:metadata:1.0.0]]]
 
@@ -155,7 +155,7 @@ Order = 20
 
         [[[parameter StorageDiskSize]]]
         Label = OSS Disk Size (GB)
-        Description = Size (GB) of each 3 premium disk attached to each OSS. Disks are raided in RAID5 configuration.
+        Description = Size (GB) of each 2 premium disk attached to each OSS. Disks are raided in RAID0 configuration.
         DefaultValue = 1024
   
         [[[parameter BeeGFSRoot ]]]
