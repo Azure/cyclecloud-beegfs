@@ -1,5 +1,5 @@
-default["beegfs"]["repo_file_url"] = "https://www.beegfs.io/release/beegfs_7/dists/beegfs-rhel7.repo"
-default["beegfs"]["rpm_gpg_key"] = "https://www.beegfs.io/release/beegfs_7/gpg/RPM-GPG-KEY-beegfs"
+default["beegfs"]["repo_file_url"] = "https://www.beegfs.io/release/beegfs_7_1/dists/beegfs-rhel7.repo"
+default["beegfs"]["rpm_gpg_key"] = "https://www.beegfs.io/release/beegfs_7_1/gpg/RPM-GPG-KEY-beegfs"
 
 # the directory on the MGS, MDS and OSS where the BeeGFS data resides
 default["beegfs"]["root_dir"] = "/data/beegfs"
