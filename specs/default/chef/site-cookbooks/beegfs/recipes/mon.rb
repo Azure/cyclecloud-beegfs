@@ -14,7 +14,11 @@ execute 'install_graf_rpm' do
     not_if 'rpm -qa | grep grafana-5.4.2-1.x86_64'
 end
 
-%w{ beegfs-mon influxdb grafana}.each { |p| package p }
+%w{beegfs-mon influxdb grafana}.each do |pkg|
+    package pkg do
+      not_if "rpm -qa | grep #{pkg}"
+    end
+  end
 
 # manager_ipaddress = ::BeeGFS::Helpers.search_for_manager(node['cyclecloud']['cluster']['id'])
 manager_ipaddress = node["beegfs"]["manager_ipaddress"]

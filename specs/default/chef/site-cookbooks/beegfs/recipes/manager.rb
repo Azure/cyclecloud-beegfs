@@ -6,8 +6,17 @@ include_recipe "::default"
 node.override["beegfs"]["is_manager"] = true
 cluster.store_discoverable()
 
-# install packages
-%w{beegfs-mgmtd beegfs-helperd beegfs-admon}.each { |p| package p }
+packages = case node['platform_family']
+  when 'rhel'
+    %w{beegfs-mgmtd beegfs-helperd beegfs-admon}.each do |pkg|
+     package pkg do
+       not_if "rpm -qa | grep #{pkg}"
+     end
+  end
+  when 'debian'
+    %w{beegfs-mgmtd beegfs-helperd beegfs-admon}.each { |p| package p }
+end
+
 
 mgmtd_directory = "#{node["beegfs"]["root_dir"]}/mgmtd"
 directory "#{mgmtd_directory}" do
@@ -46,4 +55,4 @@ ruby_block "Update #{beegfs_admon_conf_file}" do
     notifies :restart, 'service[beegfs-admon]', :immediately
 end     
 
-
+# gotta add a cron for discovering master

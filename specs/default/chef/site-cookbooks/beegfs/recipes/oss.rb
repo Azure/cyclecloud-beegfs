@@ -3,8 +3,16 @@
 include_recipe "::default"
 include_recipe "::_tune_beegfs"
 
-%w{beegfs-storage}.each { |p| package p }
-
+packages = case node['platform_family']
+  when 'rhel'
+    %w{beegfs-storage}.each do |pkg|
+     package pkg do
+       not_if "rpm -qa | grep #{pkg}"
+     end
+  end
+  when 'debian'
+    %w{beegfs-storage}.each { |p| package p }
+end
 
 storage_directory = "#{node["beegfs"]["root_dir"]}/storage"
 directory "#{storage_directory}" do
@@ -19,10 +27,7 @@ beegfs_storage_conf_file = "/etc/beegfs//beegfs-storage.conf"
 
 hostname_line = "sysMgmtdHost = #{manager_ipaddress}"
 
-# Run the reconfig again if the manager host changes:
-service "beegfs-storage" do
-    action [:enable]
-end
+
 ruby_block "Update #{beegfs_storage_conf_file}" do
     block do
       file = Chef::Util::FileEdit.new(beegfs_storage_conf_file)
@@ -38,8 +43,16 @@ ruby_block "Update #{beegfs_storage_conf_file}" do
       file.write_file
     end
     not_if "grep -q '#{hostname_line}' #{beegfs_storage_conf_file}"
-    notifies :restart, 'service[beegfs-storage]', :immediately 
 end
 
+defer_block "Defer starting beegfs until end of the converge" do
+    directory "#{storage_directory}" do
+       recursive true
+    end
+
+    service "beegfs-storage" do
+        action [:enable, :start]
+    end
+end
 
 

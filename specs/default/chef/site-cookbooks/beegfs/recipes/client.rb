@@ -2,12 +2,14 @@ include_recipe "::default"
 
 packages = case node['platform_family']
            when 'rhel'
-             %w{beegfs-client beegfs-helperd beegfs-utils gcc gcc-c++}
-           when 'debian'
-             %w{beegfs-client beegfs-helperd beegfs-utils gcc cpp}
+             %w{beegfs-client beegfs-helperd beegfs-utils gcc gcc-c++}.each do |pkg|
+              package pkg do
+                not_if "rpm -qa | grep #{pkg}"
+              end
            end
-
-packages.each { |p| package p }
+           when 'debian'
+             %w{beegfs-client beegfs-helperd beegfs-utils gcc cpp}.each { |p| package p }
+end
 
 # Problem with some images running an outdated kernel version,
 # where the kernel headers don't exist in the repos anymore.

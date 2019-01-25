@@ -1,6 +1,7 @@
-default['beegfs']['repo']['version'] = 'beegfs_7_1'
+default['beegfs']['repo']['version'] = 'latest-stable'
+default['beegfs']['repo']['key_version'] = 'beegfs_7_1'
 default['beegfs']['repo']['yum']['baseurl'] = "https://www.beegfs.io/release/#{node['beegfs']['repo']['version']}/dists/rhel#{node['platform_version'].to_i}"
-default['beegfs']['repo']['yum']['gpgkey'] = "https://www.beegfs.io/release/#{node['beegfs']['repo']['version']}/gpg/RPM-GPG-KEY-beegfs"
+default['beegfs']['repo']['yum']['gpgkey'] = "https://www.beegfs.io/release/#{node['beegfs']['repo']['key_version']}/gpg/RPM-GPG-KEY-beegfs"
 
 default['beegfs']['repo']['apt']['uri'] = "https://www.beegfs.io/release/#{node['beegfs']['repo']['version']}"
 default['beegfs']['repo']['apt']['arch'] = 'amd64'
