@@ -28,3 +28,14 @@ The file in this directory `pbs_beegfs_template.txt` serves as an example that i
     - The Required Settings of the cluster creation form provides a dropdown to select the name of the BeeGFS cluster. You should be able to find the name of the BeeGFS cluster in here if it is running through the same CycleCloud server.
 
 
+
+## Using Beeond
+
+- Import the template: 
+    $ cyclecloud import_template PBS-Beeond -f pbs_beeond_template.txt -c PBS-BeeGFS
+
+- To mount a Beeond filesystem as part of your job script, run:
+    $ beeond start -n $PBS_NODEFILE -d /mnt/resource/beeond -c /mnt/beeond
+
+- To stop the Beeond filesystem at the end of your job script, run:
+    $ beeond stop -n $PBS_NODEFILE
