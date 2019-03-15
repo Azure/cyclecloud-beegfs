@@ -28,3 +28,10 @@ default['beegfs']['client']['cluster_name'] = nil
 
 # The mount point for the BeeGFS clients
 default['beegfs']['client']['mount_point'] = '/mnt/beegfs'
+
+# Attribute examples. 'example' disk mount is not used.
+default['beegfs']['disk_mounts']['example']['mountpoint'] = '/datadisk'
+default['beegfs']['disk_mounts']['example']['raid_level'] = 0
+default['beegfs']['disk_mounts']['example']['options'] = "noatime,nodiratime,nobarrier,nofail"
+default['beegfs']['disk_mounts']['example']['fs_options'] = " -J size=400 -Odir_index,filetype"
+default['beegfs']['disk_mounts']['example']['disabled'] = false

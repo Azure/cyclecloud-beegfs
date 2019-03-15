@@ -56,10 +56,9 @@ Category = Filesystems
     SSD = true
     Mount = meta
 
-    [[[configuration cyclecloud.mounts.meta]]]
+    [[[configuration beegfs.disk_mounts.meta]]]
     fs_type = xfs
     raid_level = 0
-    disabled = true
 
     [[[volume disk3]]]
     Size = $StorageDiskSize
@@ -81,12 +80,11 @@ Category = Filesystems
     SSD = true
     Mount = storage
 
-    [[[configuration cyclecloud.mounts.storage]]]
+    [[[configuration beegfs.disk_mounts.storage]]]
     fs_type = ext4
     raid_level = 0
     options = noatime,nodiratime,nobarrier,nofail
     fs_options = " -J size=400 -Odir_index,filetype"
-    disabled = true
        
 
 
@@ -108,10 +106,9 @@ Category = Filesystems
     SSD = true
     Mount = meta
 
-    [[[configuration cyclecloud.mounts.meta]]]
+    [[[configuration beegfs.disk_mounts.meta]]]
     fs_type = xfs
     raid_level = 0
-    disabled = true
 
         [[[cluster-init beegfs:metadata:1.2.0]]]
 

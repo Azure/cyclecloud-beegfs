@@ -8,19 +8,19 @@ setup_storage_disks()
     raidDevice=$2
 
     BEEGFS_ROOT=`jetpack config beegfs.root_dir || echo "/data/beegfs"`
-    STORAGE_LUNS=`jetpack config cyclecloud.mounts.${mount}.luns || echo "no drives to configure for $1"; return 0`
-    filesystem=`jetpack config cyclecloud.mounts.${mount}.type || echo "ext4"`
-    VOLUME_TYPE=`jetpack config cyclecloud.mounts.${mount}.raid_level || echo "0"`
-    FS_OPTS=`jetpack config cyclecloud.mounts.${mount}.fs_options || echo "-i 2048 -I 512 -J size=400 -Odir_index,filetype"`
-    MOUNT_OPTS=`jetpack config cyclecloud.mounts.${mount}.options || echo "noatime,nodiratime,nobarrier,nofail"`
-    mountPoint=`jetpack config cyclecloud.mounts.${mount}.mountpoint || echo "$BEEGFS_ROOT/$mount"`
+    STORAGE_LUNS=`jetpack config beegfs.disk_mounts.${mount}.luns || echo "no drives to configure for $1"; return 0`
+    filesystem=`jetpack config beegfs.disk_mounts.${mount}.type || echo "ext4"`
+    VOLUME_TYPE=`jetpack config beegfs.disk_mounts.${mount}.raid_level || echo "0"`
+    FS_OPTS=`jetpack config beegfs.disk_mounts.${mount}.fs_options || echo "-i 2048 -I 512 -J size=400 -Odir_index,filetype"`
+    MOUNT_OPTS=`jetpack config beegfs.disk_mounts.${mount}.options || echo "noatime,nodiratime,nobarrier,nofail"`
+    mountPoint=`jetpack config beegfs.disk_mounts.${mount}.mountpoint || echo "$BEEGFS_ROOT/$mount"`
 
-    DISABLED=`jetpack config cyclecloud.mounts.${mount}.disabled || "False"`
+    DISABLED=`jetpack config beegfs.disk_mounts.${mount}.disabled || echo "False"`
 
 
-    if ! [[ "$DISABLED" == "True" ||  "$DISABLED" == "true" ]]
+    if [[ "$DISABLED" == "True" ||  "$DISABLED" == "true" ]]
         then
-        echo "mount being configured in chef"
+        echo "mount $1 is disabled, skipping"
         return 0
     fi
 
