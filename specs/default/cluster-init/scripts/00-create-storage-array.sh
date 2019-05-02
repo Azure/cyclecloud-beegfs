@@ -8,7 +8,7 @@ setup_storage_disks()
     raidDevice=$2
 
     BEEGFS_ROOT=`jetpack config beegfs.root_dir || echo "/data/beegfs"`
-    STORAGE_LUNS=`jetpack config beegfs.disk_mounts.${mount}.luns || echo "no drives to configure for $1"; return 0`
+    STORAGE_LUNS=`jetpack config cyclecloud.mounts.${mount}.luns || echo "no drives to configure for $1"; return 0`
     filesystem=`jetpack config beegfs.disk_mounts.${mount}.type || echo "ext4"`
     VOLUME_TYPE=`jetpack config beegfs.disk_mounts.${mount}.raid_level || echo "0"`
     FS_OPTS=`jetpack config beegfs.disk_mounts.${mount}.fs_options || echo "-i 2048 -I 512 -J size=400 -Odir_index,filetype"`

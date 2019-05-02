@@ -46,6 +46,11 @@ Category = Filesystems
     # The initial number of cores of this type to start when the cluster starts
     InitialCount= $InitialStorageCount
 
+
+    [[[configuration cyclecloud.mounts]]]
+        storage.disabled = true
+        meta.disabled = true
+
     [[[volume disk1]]]
     Size = $MetadataDiskSize
     SSD = true
@@ -59,6 +64,7 @@ Category = Filesystems
     [[[configuration beegfs.disk_mounts.meta]]]
     fs_type = xfs
     raid_level = 0
+    fs_options = "-i 4096 -I 512 -J size=400 -Odir_index,filetype"
 
     [[[volume disk3]]]
     Size = $StorageDiskSize
@@ -84,9 +90,8 @@ Category = Filesystems
     fs_type = ext4
     raid_level = 0
     options = noatime,nodiratime,nobarrier,nofail
-    fs_options = " -J size=400 -Odir_index,filetype"
+    fs_options = "-i 4096 -I 512 -J size=400 -Odir_index,filetype"
        
-
 
         [[[cluster-init beegfs:storage:1.2.0]]]
 
