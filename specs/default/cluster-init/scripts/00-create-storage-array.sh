@@ -1,6 +1,66 @@
 #!/bin/bash
 set -x
 
+get_local_disks()
+{      
+    DEVICE_NAME=$1
+    
+    # Dump the current disk config for debugging
+    fdisk -l
+    
+    # Dump the scsi config
+    lsscsi
+    
+    # Get the root/OS disk so we know which device it uses and can ignore it later
+    rootDevice=`mount | grep "on / type" | awk '{print $1}' | sed 's/[0-9]//g'`
+    
+    # Get the TMP disk so we know which device and can ignore it later
+    tmpDevice=`mount | grep "on /mnt/resource type" | awk '{print $1}' | sed 's/[0-9]//g'`
+
+    # Get the metadata and storage disk sizes from fdisk, we ignore the disks above
+    metadataDiskSize=`fdisk -l | grep '^Disk /dev/' | grep -v $rootDevice | grep -v $tmpDevice | awk '{print $3}' | sort -n -r | tail -1`
+    storageDiskSize=`fdisk -l | grep '^Disk /dev/' | grep -v $rootDevice | grep -v $tmpDevice | awk '{print $3}' | sort -n | tail -1`
+
+    # Compute number of disks
+    nbDisks=`fdisk -l | grep '^Disk /dev/' | grep -v $rootDevice | grep -v $tmpDevice | wc -l`
+    echo "nbDisks=$nbDisks"
+    let nbMetadaDisks=nbDisks
+    let nbStorageDisks=nbDisks
+        
+    if is_convergednode; then
+        # If metadata and storage disks are the same size, we grab 1/3 for meta, 2/3 for storage
+        
+        # minimum number of disks has to be 2
+        let nbMetadaDisks=nbDisks/3
+        if [ $nbMetadaDisks -lt 2 ]; then
+            let nbMetadaDisks=2
+        fi
+        
+        let nbStorageDisks=nbDisks-nbMetadaDisks
+    fi
+    
+    echo "nbMetadaDisks=$nbMetadaDisks nbStorageDisks=$nbStorageDisks"			
+    
+    metadataDevices="`fdisk -l | grep '^Disk /dev/' \
+        | grep $metadataDiskSize | awk '{print $2}' \
+        | awk -F: '{print $1}' | sort | head -$nbMetadaDisks \
+        | tr '\n' ' ' | sed 's|/dev/||g'`"
+    storageDevices="`fdisk -l | grep '^Disk /dev/' \
+        | grep $storageDiskSize | awk '{print $2}' \
+        | awk -F: '{print $1}' | sort | tail -$nbStorageDisks \
+        | tr '\n' ' ' | sed 's|/dev/||g'`"
+
+    case "$DEVICE_NAME" in
+            meta)
+                return "$metadataDevices"
+                ;;
+            
+            storage)
+                return "$storageDevices"
+                ;;
+    esac
+}
+
 setup_storage_disks()
 {
     #replace with jq
@@ -8,29 +68,30 @@ setup_storage_disks()
     raidDevice=$2
 
     BEEGFS_ROOT=`jetpack config beegfs.root_dir || echo "/data/beegfs"`
-    STORAGE_LUNS=`jetpack config cyclecloud.mounts.${mount}.luns || echo "no drives to configure for $1"; return 0`
+    STORAGE_LUNS=`jetpack config cyclecloud.mounts.${mount}.luns 0`
     filesystem=`jetpack config beegfs.disk_mounts.${mount}.type || echo "ext4"`
     VOLUME_TYPE=`jetpack config beegfs.disk_mounts.${mount}.raid_level || echo "0"`
     FS_OPTS=`jetpack config beegfs.disk_mounts.${mount}.fs_options || echo "-i 2048 -I 512 -J size=400 -Odir_index,filetype"`
     MOUNT_OPTS=`jetpack config beegfs.disk_mounts.${mount}.options || echo "noatime,nodiratime,nobarrier,nofail"`
     mountPoint=`jetpack config beegfs.disk_mounts.${mount}.mountpoint || echo "$BEEGFS_ROOT/$mount"`
 
-    DISABLED=`jetpack config beegfs.disk_mounts.${mount}.disabled || echo "False"`
-
-
-    if [[ "$DISABLED" == "True" ||  "$DISABLED" == "true" ]]
-        then
-        echo "mount $1 is disabled, skipping"
-        return 0
+    DISKS=""
+    if [ "$STORAGE_LUNS" != "0" ]; then
+        echo "Using managed disks"
+        LUNS=${STORAGE_LUNS#"["}
+        LUNS=${LUNS%"]"}
+        LUNS=$(echo $LUNS | tr -d ",")
+        for lun in $LUNS; do
+            disk=`readlink -f /dev/disk/azure/scsi1/lun$lun`
+            DISKS="$DISKS ${disk}"
+        done
+    else
+        DISKS=$(get_local_disks $mount)
     fi
 
-    LUNS=${STORAGE_LUNS#"["}
-    LUNS=${LUNS%"]"}
-    LUNS=$(echo $LUNS | tr -d ",")
     createdPartitions=""
 
-    for lun in $LUNS; do
-        disk=`readlink -f /dev/disk/azure/scsi1/lun$lun`
+    for disk in $DISKS; do
         fdisk -l $disk || break
         fdisk $disk << EOF
 n
