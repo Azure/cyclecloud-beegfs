@@ -46,12 +46,25 @@ Category = Filesystems
     # The initial number of cores of this type to start when the cluster starts
     InitialCount= $InitialStorageCount
 
+    # Use cluster-init for setting up mdadm
     [[[configuration cyclecloud.mounts]]]
-        nvme.disabled = true
-        nvme.mdadm = true
-        nvme.mountpoint = $BeeGFSRoot
-        nvme.type = xfs
-       
+        storage.disabled = true
+        storage.mdadm = true
+        storage.mountpoint = $BeeGFSRoot
+        storage.type = xfs
+        meta.disabled = true
+
+
+    [[[volume disk1]]]
+    Size = $StorageDiskSize
+    SSD = true
+    Mount = storage
+
+    [[[volume disk2]]]
+    Size = $StorageDiskSize
+    SSD = true
+    Mount = storage
+
 
     [[[cluster-init beegfs:storage:$ProjVersion]]]
 
@@ -61,11 +74,22 @@ Category = Filesystems
     # The initial number of cores of this type to start when the cluster starts
     InitialCount= $InitialMetadataCount
 
-    [[[configuration cyclecloud.mounts]]]
-        nvme.disabled = true
-        nvme.mdadm = true
-        nvme.mountpoint = $BeeGFSRoot 
-        nvme.type = xfs
+    [[[volume disk1]]]
+    Size = $MetadataDiskSize
+    SSD = true
+    Mount = meta
+
+    [[[volume disk2]]]
+    Size = $MetadataDiskSize
+    SSD = true
+    Mount = meta
+
+    [[[configuration beegfs.disk_mounts]]]
+    meta.disabled = true
+    meta.mdadm = true
+    meta.mountpoint = $BeeGFSRoot
+    meta.fs_type = ext4
+    meta.raid_level = 0
 
     [[[cluster-init beegfs:metadata:$ProjVersion]]]
 
@@ -82,7 +106,7 @@ Category = Filesystems
 
 
     # The initial number of cores of this type to start when the cluster starts
-    InitialCount= $InitialClientCount
+    InitialCount= 0
     MaxCount = 1
 
         [[[cluster-init beegfs:mon:$ProjVersion]]]
@@ -122,13 +146,13 @@ Order = 10
         Label = Metadata VM
         Description = The VMType type for metadata nodes
         ParameterType = Cloud.MachineType
-        DefaultValue = Standard_L8s_v2
+        DefaultValue = Standard_D16s_v3
 
         [[[parameter StorageVMType]]]
         Label = Storage VM
         Description = The VMType type for storage nodes
         ParameterType = Cloud.MachineType
-        DefaultValue = Standard_L8s_v2
+        DefaultValue = Standard_D16s_v3
 
         [[[parameter ClientVMType]]]
         Label = Client VM
@@ -166,6 +190,16 @@ Order = 20
     [[parameters BeeGFS Settings]]
     Description = "Section for configuring BeeGFS"
     Order = 5
+
+        [[[parameter StorageDiskSize]]]
+        Label = OSS Disk Size (GB)
+        Description = Size (GB) of each 2 premium disk attached to each OSS. Disks are raided in RAID0 configuration.
+        DefaultValue = 1024
+
+        [[[parameter MetadataDiskSize]]]
+        Label = MDS Disk Size (GB)
+        Description = Size (GB) of each 2 premium disk attached to each OSS. Disks are raided in RAID0 configuration.
+        DefaultValue = 1024
 
         [[[parameter BeeGFSRoot ]]]
         Label = BeeGFS Dir 
@@ -225,8 +259,7 @@ Order = 20
 	
         [[[parameter ProjVersion]]]
         Label = Project Version
-        DefaultValue = 1.3.0
-
+        DefaultValue = 1.4.0
 
     [[parameters Advanced Networking]]
     Description = Advanced networking settings

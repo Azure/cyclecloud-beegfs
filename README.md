@@ -31,6 +31,12 @@ Using the persistent disks, the data on the cluster will be recoverable
 even in the event of unplanned node termination or VM scheduled maintenance. This is not so when using local disks as the disk is only 
 stored locally and will be lost when the VM is deallocated.
 
+### Metadata
+
+BeeGFS is not fully supporting extended file attributes. Applications that make
+heavy use of _setxattr_ and _getxattr_ can expose instabilities in the beegfs-meta
+daemon. Basic metadata attributes are efficiently used but one should avoid using
+BeeGFS for applications using extended file attributes.
 
 ## Cluster Life-Cycle for Local Disk (default)
 
