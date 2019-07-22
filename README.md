@@ -2,36 +2,48 @@
 
 A CycleCloud Project for starting a BeeGFS cluster in Azure. 
 
-## Performance, Capacity and Cost Planning
+## Performance, Capacity and Cost
 
-The BeeGFS cluster here is a collection of VMs with attached Azure Premium Managed
-disks. Each storage node hosts both the BeeGFS-Metadata and -Storage daemons with
-one RAID array for each.
+This project includes two scenarios; one configuration based on low-latency local NVMe SSDs and one based on Azure Premium Disks.
 
-HPC workloads can have widely varying I/0 requirements. To understand the considerations
-of the configuration options an example is offered here.  Configuration of storage node:
+| Scenario | Local Disk | Persistent Disk |
+|---|---|---|
+| VM Size | Standard_L8s_v2 | Standard_D16s_v3 |
+| Disk | Local NVMe SSD  | Premium Disk (2 x P30) |
+| Capacity | 1.9 TB | 2.0 TB  | 
+| Node Throughput | 400 MB/s | 384 MB/s  |
+| Node IOPS | 40000 | 10000  |
+| Node $/month | $455  | $830  |
+| Node Data Durability | 3 9's | 11 9's | 
 
-* Storage VM 
-  * 2 - Metadata Disks (Raid0)
-  * 4 - Storage Disks (Raid0)
+These configurations have been designed and tested to have maximal performance-cost. 
+The Local Disk scenario will show better performance, particularly latency and IOPS, 
+but durability of data will be relatively lower. The performance (and capacity) of a 
+cluster can be estimated as the 
+performance of a single node multiplied by the number of storage nodes
+in the cluster. This has been tested up to 32 nodes.
 
-Azure P30 represents the best performance/cost disk and offers 1TB of storage.
-Using the P30 as a primary storage device, then each storage node would have 4TB capacity.
-A rule of thumb is to use 1/4 metadata storage to object storage so 2 x P20 metadata
-disks resulting in 1TB of metadata storage is a reasonable initial design.
+If cost-per-storage is more important that cost-per-performance then you can increase the size 
+or quantity of additional premium disks attached. 
+Increasing the attached disks will increase the capacity, but not the performance.
 
-With 4 x P30 the VM has access to *1 GB/s* or *30 kIOPS* whichever is less, based
-on the specification of the block devices. A virtual machine also has a throughput 
-allowance.  Consider using Standard_D32s_v3 as a storage VM which offers *768 MB/s* or *51.2 kIOPS*.
+Using the persistent disks, the data on the cluster will be recoverable 
+even in the event of unplanned node termination or VM scheduled maintenance. This is not so when using local disks as the disk is only 
+stored locally and will be lost when the VM is deallocated.
 
-* Storage VM Standard_D32s_v3 (*768 MB/s*, *51.2 kIOPS*)
-  * Metadata: 2 x P20 (total: 1 TB, *300 MB/s*, *4.6 kIOPS* )
-  * Storage: 4 x P30 (total: 4 TB, *1 GB/s*, *30 kIOPS*)
 
-A cluster can be constructed by 1 or more of these compute nodes where with each compute node added the 
-net resources available to a pool of clients will grow proportionally.  
+## Cluster Life-Cycle for Local Disk (default)
 
-## Cluster Life-Cycle
+For storage cluster based on local SSDs storage is not preserved across VM 
+deallocations and restarts.
+
+* Create Cluster - creates storage VMs and disks
+* Add Node - add additional node will increase size & resources of cluster
+* Shutdown/Delete Node - delete VM and disks, data on disks will be destroyed.
+* Terminate Cluster - delete all VMs and disks, all data destroyed.
+
+
+## Cluster Life-Cycle for Premium Disk
 
 It is possible to delete data and disks managed by CycleCloud in the CycleCloud UI.
 This can result in data loss.  Here are the actions available in the CycleCloud management.

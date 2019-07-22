@@ -50,42 +50,23 @@ Category = Filesystems
     [[[configuration cyclecloud.mounts]]]
         storage.disabled = true
         storage.mdadm = true
-        storage.mountpoint = /data/beegfs/storage
+        storage.mountpoint = $BeeGFSRoot
+        storage.type = xfs
         meta.disabled = true
-        meta.mdadm = true
-        meta.mountpoint = /data/beegfs/meta
+
 
     [[[volume disk1]]]
-    Size = $MetadataDiskSize
+    Size = $StorageDiskSize
     SSD = true
-    Mount = meta
+    Mount = storage
 
     [[[volume disk2]]]
-    Size = $MetadataDiskSize
-    SSD = true
-    Mount = meta
-
-    [[[volume disk3]]]
     Size = $StorageDiskSize
     SSD = true
     Mount = storage
 
-    [[[volume disk4]]]
-    Size = $StorageDiskSize
-    SSD = true
-    Mount = storage
 
-    [[[volume disk5]]]
-    Size = $StorageDiskSize
-    SSD = true
-    Mount = storage
-
-    [[[volume disk6]]]
-    Size = $StorageDiskSize
-    SSD = true
-    Mount = storage
-
-        [[[cluster-init beegfs:storage:$ProjVersion]]]
+    [[[cluster-init beegfs:storage:$ProjVersion]]]
 
     [[nodearray metadata]]
     MachineType = $MetadataVMType
@@ -103,11 +84,14 @@ Category = Filesystems
     SSD = true
     Mount = meta
 
-    [[[configuration beegfs.disk_mounts.meta]]]
-    fs_type = xfs
-    raid_level = 0
+    [[[configuration beegfs.disk_mounts]]]
+    meta.disabled = true
+    meta.mdadm = true
+    meta.mountpoint = $BeeGFSRoot
+    meta.fs_type = ext4
+    meta.raid_level = 0
 
-        [[[cluster-init beegfs:metadata:$ProjVersion]]]
+    [[[cluster-init beegfs:metadata:$ProjVersion]]]
 
     [[nodearray client]]
     MachineType = $ClientVMType
@@ -162,13 +146,13 @@ Order = 10
         Label = Metadata VM
         Description = The VMType type for metadata nodes
         ParameterType = Cloud.MachineType
-        DefaultValue = Standard_DS3_v2
+        DefaultValue = Standard_D16s_v3
 
         [[[parameter StorageVMType]]]
         Label = Storage VM
         Description = The VMType type for storage nodes
         ParameterType = Cloud.MachineType
-        DefaultValue = Standard_DS3_v2
+        DefaultValue = Standard_D16s_v3
 
         [[[parameter ClientVMType]]]
         Label = Client VM

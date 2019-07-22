@@ -49,7 +49,8 @@ Category = Filesystems
     [[[configuration cyclecloud.mounts]]]
         nvme.disabled = true
         nvme.mdadm = true
-        nvme.mountpoint = /data/beegfs 
+        nvme.mountpoint = $BeeGFSRoot
+        nvme.type = xfs
        
 
     [[[cluster-init beegfs:storage:$ProjVersion]]]
@@ -60,21 +61,13 @@ Category = Filesystems
     # The initial number of cores of this type to start when the cluster starts
     InitialCount= $InitialMetadataCount
 
-    [[[volume disk1]]]
-    Size = $MetadataDiskSize
-    SSD = true
-    Mount = meta
+    [[[configuration cyclecloud.mounts]]]
+        nvme.disabled = true
+        nvme.mdadm = true
+        nvme.mountpoint = $BeeGFSRoot 
+        nvme.type = xfs
 
-    [[[volume disk2]]]
-    Size = $MetadataDiskSize
-    SSD = true
-    Mount = meta
-
-    [[[configuration beegfs.disk_mounts.meta]]]
-    fs_type = xfs
-    raid_level = 0
-
-        [[[cluster-init beegfs:metadata:$ProjVersion]]]
+    [[[cluster-init beegfs:metadata:$ProjVersion]]]
 
     [[nodearray client]]
     MachineType = $ClientVMType
@@ -129,13 +122,13 @@ Order = 10
         Label = Metadata VM
         Description = The VMType type for metadata nodes
         ParameterType = Cloud.MachineType
-        DefaultValue = Standard_DS3_v2
+        DefaultValue = Standard_L8s_v2
 
         [[[parameter StorageVMType]]]
         Label = Storage VM
         Description = The VMType type for storage nodes
         ParameterType = Cloud.MachineType
-        DefaultValue = Standard_DS3_v2
+        DefaultValue = Standard_L8s_v2
 
         [[[parameter ClientVMType]]]
         Label = Client VM
@@ -173,16 +166,6 @@ Order = 20
     [[parameters BeeGFS Settings]]
     Description = "Section for configuring BeeGFS"
     Order = 5
-
-        [[[parameter StorageDiskSize]]]
-        Label = OSS Disk Size (GB)
-        Description = Size (GB) of each 2 premium disk attached to each OSS. Disks are raided in RAID0 configuration.
-        DefaultValue = 1024
-
-        [[[parameter MetadataDiskSize]]]
-        Label = MDS Disk Size (GB)
-        Description = Size (GB) of each 2 premium disk attached to each OSS. Disks are raided in RAID0 configuration.
-        DefaultValue = 1024
 
         [[[parameter BeeGFSRoot ]]]
         Label = BeeGFS Dir 
