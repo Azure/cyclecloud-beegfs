@@ -13,15 +13,15 @@ directory bootstrap_dir
   end
 
 # Return if mounts is undefined.
-return unless node['cyclecloud'].key?('mounts')
+return unless node['azvolumes'].key?('mounts')
 
 # Should never hit this, return if mounts is initialized.
-return if node['cyclecloud']['mounts'].nil? || node['cyclecloud']['mounts'].empty?
+return if node['azvolumes']['mounts'].nil? || node['azvolumes']['mounts'].empty?
 
 ct = 10
-node['cyclecloud']['mounts'].keys.each do |k|
-    mount = node['cyclecloud']['mounts'][k]
-    if ! (mount.key?('disabled') && mount['disabled'] && mount.key?('mdadm') && mount['mdadm'])
+node['azvolumes']['mounts'].keys.each do |k|
+    mount = node['azvolumes']['mounts'][k]
+    if ! (mount.key?('disabled') && mount['disabled'] )
         next
     end
     if k == "nvme"

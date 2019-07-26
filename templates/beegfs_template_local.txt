@@ -46,9 +46,7 @@ Category = Filesystems
     # The initial number of cores of this type to start when the cluster starts
     InitialCount= $InitialStorageCount
 
-    [[[configuration cyclecloud.mounts]]]
-        nvme.disabled = true
-        nvme.mdadm = true
+    [[[configuration azvolumes.mounts]]]
         nvme.mountpoint = $BeeGFSRoot
         nvme.type = xfs
        
@@ -61,9 +59,7 @@ Category = Filesystems
     # The initial number of cores of this type to start when the cluster starts
     InitialCount= $InitialMetadataCount
 
-    [[[configuration cyclecloud.mounts]]]
-        nvme.disabled = true
-        nvme.mdadm = true
+    [[[configuration azvolumes.mounts]]]
         nvme.mountpoint = $BeeGFSRoot 
         nvme.type = xfs
 

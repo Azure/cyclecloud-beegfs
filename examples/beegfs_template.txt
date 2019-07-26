@@ -47,9 +47,7 @@ Category = Filesystems
     InitialCount= $InitialStorageCount
 
     # Use cluster-init for setting up mdadm
-    [[[configuration cyclecloud.mounts]]]
-        storage.disabled = true
-        storage.mdadm = true
+    [[[configuration azvolumes.mounts]]]
         storage.mountpoint = $BeeGFSRoot
         storage.type = xfs
         meta.disabled = true
@@ -85,8 +83,6 @@ Category = Filesystems
     Mount = meta
 
     [[[configuration beegfs.disk_mounts]]]
-    meta.disabled = true
-    meta.mdadm = true
     meta.mountpoint = $BeeGFSRoot
     meta.fs_type = ext4
     meta.raid_level = 0

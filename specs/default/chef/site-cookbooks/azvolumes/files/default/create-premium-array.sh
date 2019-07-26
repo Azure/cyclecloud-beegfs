@@ -7,12 +7,12 @@ setup_storage_disks()
     mount=$1
     raidDevice=$2
 
-    STORAGE_LUNS=`jetpack config cyclecloud.mounts.${mount}.luns || echo "no drives to configure for $1"; return 0`
-    filesystem=`jetpack config cyclecloud.mounts.${mount}.type || echo "ext4"`
-    VOLUME_TYPE=`jetpack config cyclecloud.mounts.${mount}.raid_level || echo "0"`
-    FS_OPTS=`jetpack config cyclecloud.mounts.${mount}.fs_options || echo " "`
-    MOUNT_OPTS=`jetpack config cyclecloud.mounts.${mount}.options || echo "noatime,nodiratime,nobarrier,nofail"`
-    mountPoint=`jetpack config cyclecloud.mounts.${mount}.mountpoint `
+    STORAGE_LUNS=`jetpack config azvolumes.mounts.${mount}.luns || echo "no drives to configure for $1"; return 0`
+    filesystem=`jetpack config azvolumes.mounts.${mount}.type || echo "ext4"`
+    VOLUME_TYPE=`jetpack config azvolumes.mounts.${mount}.raid_level || echo "0"`
+    FS_OPTS=`jetpack config azvolumes.mounts.${mount}.fs_options || echo " "`
+    MOUNT_OPTS=`jetpack config azvolumes.mounts.${mount}.options || echo "noatime,nodiratime,nobarrier,nofail"`
+    mountPoint=`jetpack config azvolumes.mounts.${mount}.mountpoint `
 
     LUNS=${STORAGE_LUNS#"["}
     LUNS=${LUNS%"]"}
