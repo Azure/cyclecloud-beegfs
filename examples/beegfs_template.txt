@@ -21,6 +21,10 @@ Category = Filesystems
         cyclecloud.maintenance_converge.enabled = false
         cyclecloud.selinux.policy = permissive
 
+        # defer to azvolumes
+        cyclecloud.mounts.storage.disabled = true
+        cyclecloud.mounts.meta.disabled = true
+
         [[[cluster-init beegfs:default:$ProjVersion]]]
 
     [[node manager]]
@@ -50,7 +54,6 @@ Category = Filesystems
     [[[configuration azvolumes.mounts]]]
         storage.mountpoint = $BeeGFSRoot
         storage.type = xfs
-        meta.disabled = true
 
 
     [[[volume disk1]]]
@@ -82,7 +85,7 @@ Category = Filesystems
     SSD = true
     Mount = meta
 
-    [[[configuration beegfs.disk_mounts]]]
+    [[[configuration azvolumes.mounts]]]
     meta.mountpoint = $BeeGFSRoot
     meta.fs_type = ext4
     meta.raid_level = 0

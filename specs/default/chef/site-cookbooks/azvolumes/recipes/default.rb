@@ -13,15 +13,14 @@ directory bootstrap_dir
   end
 
 # Return if mounts is undefined.
-return unless node['azvolumes'].key?('mounts')
+return unless node.key?('azvolumes') && node['azvolumes'].key?('mounts')
 
-# Should never hit this, return if mounts is initialized.
 return if node['azvolumes']['mounts'].nil? || node['azvolumes']['mounts'].empty?
 
 ct = 10
 node['azvolumes']['mounts'].keys.each do |k|
     mount = node['azvolumes']['mounts'][k]
-    if ! (mount.key?('disabled') && mount['disabled'] )
+    if mount.key?('disabled') && mount['disabled'] 
         next
     end
     if k == "nvme"
