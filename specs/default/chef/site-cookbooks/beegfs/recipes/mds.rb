@@ -3,12 +3,18 @@
 include_recipe "::default"
 include_recipe "::_tune_beegfs"
 
-%w{beegfs-meta}.each { |p| package p }
+packages = case node['platform_family']
+when 'rhel'
+  %w{beegfs-meta}.each do |pkg|
+   package pkg do
+     not_if "rpm -qa | grep #{pkg}"
+   end
+end
+when 'debian'
+  %w{beegfs-meta}.each { |p| package p }
+end
 
 meta_directory = "#{node["beegfs"]["root_dir"]}/meta"
-directory "#{meta_directory}" do
-    recursive true
-end
 
 # manager_ipaddress = ::BeeGFS::Helpers.search_for_manager(node['cyclecloud']['cluster']['id'])
 manager_ipaddress = node["beegfs"]["manager_ipaddress"]
@@ -16,10 +22,6 @@ manager_ipaddress = node["beegfs"]["manager_ipaddress"]
 chef_state =  node['cyclecloud']['chefstate']
 beegfs_meta_conf_file = "/etc/beegfs/beegfs-meta.conf"
 hostname_line = "sysMgmtdHost = #{manager_ipaddress}"
-
-service "beegfs-meta" do
-    action [:enable]
-end
 
 # Run the reconfig again if the manager host changes:
 ruby_block "Update #{beegfs_meta_conf_file}" do
@@ -32,6 +34,15 @@ ruby_block "Update #{beegfs_meta_conf_file}" do
       file.write_file
     end
     not_if "grep -q '#{hostname_line}' #{beegfs_meta_conf_file}"
-    notifies :restart, 'service[beegfs-meta]', :immediately 
 end
 
+
+defer_block "Defer starting beegfs until end of the converge" do
+  directory "#{meta_directory}" do
+     recursive true
+  end
+
+  service "beegfs-meta" do
+      action [:enable, :start]
+  end
+end

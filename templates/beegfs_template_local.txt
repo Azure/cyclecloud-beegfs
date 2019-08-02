@@ -16,16 +16,21 @@ Category = Filesystems
     KeyPairLocation = ~/.ssh/cyclecloud.pem
     
         [[[configuration]]]
-        
-        [[[cluster-init beegfs:default:1.1.0]]]
+
+        beegfs.root_dir = $BeeGFSRoot
+        cyclecloud.maintenance_converge.enabled = false
+        cyclecloud.selinux.policy = permissive
+
+        [[[cluster-init beegfs:default:$ProjVersion]]]
 
     [[node manager]]
     MachineType = $ManagerVMType
     IsReturnProxy = $ReturnProxy
     
         [[[configuration]]]
+        cyclecloud.maintenance_converge.enabled = true
 
-        [[[cluster-init beegfs:manager:1.1.0]]]
+        [[[cluster-init beegfs:manager:$ProjVersion]]]
 
         [[[network-interface eth0]]]
         AssociatePublicIpAddress = $UsePublicNetwork
@@ -41,35 +46,24 @@ Category = Filesystems
     # The initial number of cores of this type to start when the cluster starts
     InitialCount= $InitialStorageCount
 
-    Azure.AllocationMethod = Standalone
+    [[[configuration azvolumes.mounts]]]
+        nvme.mountpoint = $BeeGFSRoot
+        nvme.type = xfs
+       
 
-        [[[volume disk1]]]
-        Size = $StorageDiskSize
-        SSD = true
-        Mount = beegfs
-        Persistent = true
-
-        [[[volume disk2]]]
-        Size = $StorageDiskSize
-        SSD = true
-        Mount = beegfs
-        Persistent = true
-
-        [[[configuration cyclecloud.mounts.beegfs]]]
-        mountpoint = $BeeGFSRoot
-        fs_type = ext4
-        raid_level = 0
-
-        [[[cluster-init beegfs:storage:1.1.0]]]
+    [[[cluster-init beegfs:storage:$ProjVersion]]]
 
     [[nodearray metadata]]
     MachineType = $MetadataVMType
 
     # The initial number of cores of this type to start when the cluster starts
     InitialCount= $InitialMetadataCount
-    Azure.AllocationMethod = Standalone
 
-        [[[cluster-init beegfs:metadata:1.1.0]]]
+    [[[configuration azvolumes.mounts]]]
+        nvme.mountpoint = $BeeGFSRoot 
+        nvme.type = xfs
+
+    [[[cluster-init beegfs:metadata:$ProjVersion]]]
 
     [[nodearray client]]
     MachineType = $ClientVMType
@@ -77,8 +71,17 @@ Category = Filesystems
     # The initial number of cores of this type to start when the cluster starts
     InitialCount= $InitialClientCount
 
-        [[[cluster-init beegfs:client:1.1.0]]]
+        [[[cluster-init beegfs:client:$ProjVersion]]]
 
+    [[nodearray monitor]]
+    MachineType = $MonitorVMType
+
+
+    # The initial number of cores of this type to start when the cluster starts
+    InitialCount= 0
+    MaxCount = 1
+
+        [[[cluster-init beegfs:mon:$ProjVersion]]]
 
 [parameters About]
 Order = 1
@@ -115,19 +118,26 @@ Order = 10
         Label = Metadata VM
         Description = The VMType type for metadata nodes
         ParameterType = Cloud.MachineType
-        DefaultValue = Standard_D2_v3
+        DefaultValue = Standard_L8s_v2
 
         [[[parameter StorageVMType]]]
         Label = Storage VM
         Description = The VMType type for storage nodes
         ParameterType = Cloud.MachineType
-        DefaultValue = Standard_DS3_v2
+        DefaultValue = Standard_L8s_v2
 
         [[[parameter ClientVMType]]]
         Label = Client VM
         Description = The VMType type for client nodes, for testing 
         ParameterType = Cloud.MachineType
         DefaultValue = Standard_D2_v3
+
+        [[[parameter MonitorVMType]]]
+        Label = Monitor VM
+        Description = The VM type for BeeGFS manager node.
+        ParameterType = Cloud.MachineType
+        DefaultValue = Standard_D2_v3
+        
 
     [[parameters Networking]]
     Order = 40
@@ -153,11 +163,6 @@ Order = 20
     Description = "Section for configuring BeeGFS"
     Order = 5
 
-        [[[parameter StorageDiskSize]]]
-        Label = OSS Disk Size (GB)
-        Description = Size (GB) of each 2 premium disk attached to each OSS. Disks are raided in RAID0 configuration.
-        DefaultValue = 1024
-  
         [[[parameter BeeGFSRoot ]]]
         Label = BeeGFS Dir 
         Description = The root directory for BeeGFS data on the MDT, MGS and OSS servers
@@ -193,13 +198,14 @@ Order = 20
     [[parameters Software]]
     Description = "Specify the scheduling software, and base OS installed on all nodes, and optionally the cluster-init and chef versions from your Locker."
     Order = 10
+    Hidden = true
 
         [[[parameter ImageName]]]
         Label = Base OS
         ParameterType = Cloud.Image
         Config.OS = linux
         DefaultValue = cycle.image.centos7
-        Config.Filter := Package in {"cycle.image.centos7", "cycle.image.centos6", "cycle.image.ubuntu18"}
+        Config.Filter := Package in {"cycle.image.centos7"}
 
         [[[parameter MasterClusterInitSpecs]]]
         Label = Master Cluster-Init
@@ -213,6 +219,10 @@ Order = 20
         Description = Cluster init specs to apply to execute nodes
         ParameterType = Cloud.ClusterInitSpecs
 	
+        [[[parameter ProjVersion]]]
+        Label = Project Version
+        DefaultValue = 1.4.0
+
 
     [[parameters Advanced Networking]]
     Description = Advanced networking settings

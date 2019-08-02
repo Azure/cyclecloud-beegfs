@@ -19,7 +19,17 @@ end
 include_recipe '::_search_manager'
 
 # install the beegfs-client and utils package in each node.
-%w(beegfs-utils beegfs-client).each { |p| package p }
+packages = case node['platform_family']
+when 'rhel'
+  %w{beegfs-utils beegfs-client}.each do |pkg|
+   package pkg do
+     not_if "rpm -qa | grep #{pkg}"
+   end
+  end
+when 'debian'
+  %w{beegfs-utils beegfs-client}.each { |p| package p }
+end
+
 
 manager_ipaddress = node['beegfs']['manager_ipaddress']
 beegfs_client_conf_file = '/etc/beegfs/beegfs-client.conf'

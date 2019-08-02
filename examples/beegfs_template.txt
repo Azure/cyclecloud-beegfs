@@ -1,0 +1,283 @@
+
+################################
+## Cluster Configuration File ##
+################################
+
+[cluster beegfs]
+FormLayout = selectionpanel
+Category = Filesystems
+
+    [[node defaults]]
+    UsePublicNetwork = $UsePublicNetwork
+    Credentials = $Credentials    
+    ImageName = $ImageName
+    SubnetId = $SubnetId
+    Region = $Region
+    KeyPairLocation = ~/.ssh/cyclecloud.pem
+    
+        [[[configuration]]]
+
+        beegfs.root_dir = $BeeGFSRoot
+        cyclecloud.maintenance_converge.enabled = false
+        cyclecloud.selinux.policy = permissive
+
+        # defer to azvolumes
+        cyclecloud.mounts.storage.disabled = true
+        cyclecloud.mounts.meta.disabled = true
+
+        [[[cluster-init beegfs:default:$ProjVersion]]]
+
+    [[node manager]]
+    MachineType = $ManagerVMType
+    IsReturnProxy = $ReturnProxy
+    
+        [[[configuration]]]
+        cyclecloud.maintenance_converge.enabled = true
+
+        [[[cluster-init beegfs:manager:$ProjVersion]]]
+
+        [[[network-interface eth0]]]
+        AssociatePublicIpAddress = $UsePublicNetwork
+
+        [[[input-endpoint ganglia]]]
+        PrivatePort = 8652
+        PublicPort = 8652
+
+
+    [[nodearray storage]]
+    MachineType = $StorageVMType
+    
+    # The initial number of cores of this type to start when the cluster starts
+    InitialCount= $InitialStorageCount
+
+    # Use cluster-init for setting up mdadm
+    [[[configuration azvolumes.mounts]]]
+        storage.mountpoint = $BeeGFSRoot
+        storage.type = xfs
+
+
+    [[[volume disk1]]]
+    Size = $StorageDiskSize
+    SSD = true
+    Mount = storage
+
+    [[[volume disk2]]]
+    Size = $StorageDiskSize
+    SSD = true
+    Mount = storage
+
+
+    [[[cluster-init beegfs:storage:$ProjVersion]]]
+
+    [[nodearray metadata]]
+    MachineType = $MetadataVMType
+
+    # The initial number of cores of this type to start when the cluster starts
+    InitialCount= $InitialMetadataCount
+
+    [[[volume disk1]]]
+    Size = $MetadataDiskSize
+    SSD = true
+    Mount = meta
+
+    [[[volume disk2]]]
+    Size = $MetadataDiskSize
+    SSD = true
+    Mount = meta
+
+    [[[configuration azvolumes.mounts]]]
+    meta.mountpoint = $BeeGFSRoot
+    meta.fs_type = ext4
+    meta.raid_level = 0
+
+    [[[cluster-init beegfs:metadata:$ProjVersion]]]
+
+    [[nodearray client]]
+    MachineType = $ClientVMType
+
+    # The initial number of cores of this type to start when the cluster starts
+    InitialCount= $InitialClientCount
+
+        [[[cluster-init beegfs:client:$ProjVersion]]]
+
+    [[nodearray monitor]]
+    MachineType = $MonitorVMType
+
+
+    # The initial number of cores of this type to start when the cluster starts
+    InitialCount= 0
+    MaxCount = 1
+
+        [[[cluster-init beegfs:mon:$ProjVersion]]]
+
+[parameters About]
+Order = 1
+
+    [[parameters About beegfs]]
+
+        [[[parameter beegfs]]]
+        HideLabel = true
+        Config.Plugin = pico.widget.HtmlTemplateWidget
+        Config.Template := "<table><tr><td><img src='https://www.beegfs.io/content/wp-content/uploads/pics/beegfs-logo/BeeGFS_Logo_137x87.png' width='137' height='87'></td></tr><tr><td><p>BeeGFS is a parallel cluster file system. See the <a href=\"http://www.beegfs.io/content/\" target=\"_blank\">BeeGFS project site</a> for an overview.</p></td></tr></table>"
+
+[parameters Required Settings]
+Order = 10
+
+
+
+    [[parameters Virtual Machines ]]
+    Description = "The cluster, in this case, has two roles: the scheduler master-node with shared filer and the execute hosts. Configure which VM types to use based on the requirements of your application."
+    Order = 20
+
+        [[[parameter Region]]]
+        Label = Region
+        Description = Deployment Location
+        ParameterType = Cloud.Region
+        DefaultValue = westus2
+
+        [[[parameter ManagerVMType]]]
+        Label = Manager VM
+        Description = The VM type for BeeGFS manager node.
+        ParameterType = Cloud.MachineType
+        DefaultValue = Standard_D2_v3
+
+        [[[parameter MetadataVMType]]]
+        Label = Metadata VM
+        Description = The VMType type for metadata nodes
+        ParameterType = Cloud.MachineType
+        DefaultValue = Standard_D16s_v3
+
+        [[[parameter StorageVMType]]]
+        Label = Storage VM
+        Description = The VMType type for storage nodes
+        ParameterType = Cloud.MachineType
+        DefaultValue = Standard_D16s_v3
+
+        [[[parameter ClientVMType]]]
+        Label = Client VM
+        Description = The VMType type for client nodes, for testing 
+        ParameterType = Cloud.MachineType
+        DefaultValue = Standard_D2_v3
+
+        [[[parameter MonitorVMType]]]
+        Label = Monitor VM
+        Description = The VM type for BeeGFS manager node.
+        ParameterType = Cloud.MachineType
+        DefaultValue = Standard_D2_v3
+        
+
+    [[parameters Networking]]
+    Order = 40
+
+        [[[parameter SubnetId]]]
+        Label = Subnet ID
+        Description = Subnet Resource Path (ResourceGroup/VirtualNetwork/Subnet)
+        ParameterType = Azure.Subnet
+        Required = True
+
+
+[parameters Advanced Settings]
+Order = 20
+
+    [[parameters Azure Settings]]
+    Order = 1 
+
+        [[[parameter Credentials]]]
+        Description = The credentials for the cloud provider
+        ParameterType = Cloud.Credentials
+
+    [[parameters BeeGFS Settings]]
+    Description = "Section for configuring BeeGFS"
+    Order = 5
+
+        [[[parameter StorageDiskSize]]]
+        Label = OSS Disk Size (GB)
+        Description = Size (GB) of each 2 premium disk attached to each OSS. Disks are raided in RAID0 configuration.
+        DefaultValue = 1024
+
+        [[[parameter MetadataDiskSize]]]
+        Label = MDS Disk Size (GB)
+        Description = Size (GB) of each 2 premium disk attached to each OSS. Disks are raided in RAID0 configuration.
+        DefaultValue = 1024
+
+        [[[parameter BeeGFSRoot ]]]
+        Label = BeeGFS Dir 
+        Description = The root directory for BeeGFS data on the MDT, MGS and OSS servers
+        DefaultValue = /data/beegfs    
+
+        [[[parameter InitialStorageCount]]]
+        Label = Storage VM Count
+        Description = The total number of storage VMs to start
+        DefaultValue = 2
+        Config.Plugin = pico.form.NumberTextBox
+        Config.MinValue = 0
+        Config.MaxValue = 10
+        Config.IntegerOnly = true
+
+        [[[parameter InitialMetadataCount]]]
+        Label = MDS VM Count
+        Description = The number of metadata servers to launch at startup
+        DefaultValue = 1
+        Config.Plugin = pico.form.NumberTextBox
+        Config.MinValue = 0
+        Config.MaxValue = 8
+        Config.IntegerOnly = true
+
+        [[[parameter InitialClientCount]]]
+        Label = Client VM Count
+        Description = The number of client VMs to launch at startup
+        DefaultValue = 0
+        Config.Plugin = pico.form.NumberTextBox
+        Config.MinValue = 0
+        Config.MaxValue = 8
+        Config.IntegerOnly = true
+
+    [[parameters Software]]
+    Description = "Specify the scheduling software, and base OS installed on all nodes, and optionally the cluster-init and chef versions from your Locker."
+    Order = 10
+    Hidden = true
+
+        [[[parameter ImageName]]]
+        Label = Base OS
+        ParameterType = Cloud.Image
+        Config.OS = linux
+        DefaultValue = cycle.image.centos7
+        Config.Filter := Package in {"cycle.image.centos7"}
+
+        [[[parameter MasterClusterInitSpecs]]]
+        Label = Master Cluster-Init
+        DefaultValue = =undefined
+        Description = Cluster init specs to apply to the master node
+        ParameterType = Cloud.ClusterInitSpecs
+    
+        [[[parameter ExecuteClusterInitSpecs]]]
+        Label = Execute Cluster-Init
+        DefaultValue = =undefined
+        Description = Cluster init specs to apply to execute nodes
+        ParameterType = Cloud.ClusterInitSpecs
+	
+        [[[parameter ProjVersion]]]
+        Label = Project Version
+        DefaultValue = 1.4.0
+
+    [[parameters Advanced Networking]]
+    Description = Advanced networking settings
+
+        [[[parameter ReturnProxy]]]
+        Label = Return Proxy
+        DefaultValue = true
+        ParameterType = Boolean
+        Config.Label = Use SSH tunnel to connect to CycleCloud (required if direct access is blocked)
+
+        [[[parameter UsePublicNetwork]]]
+        Label = Public Head Node
+        DefaultValue = true
+        ParameterType = Boolean
+        Config.Label = Access master node from the Internet
+
+        [[[parameter ExecuteNodesPublic]]]
+        Label = Public Execute
+        DefaultValue = false
+        ParameterType = Boolean
+        Config.Label = Access execute nodes from the Internet
+        Conditions.Excluded := UsePublicNetwork isnt true
