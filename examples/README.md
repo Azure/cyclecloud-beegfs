@@ -9,8 +9,8 @@ The file in this directory `pbs_beegfs_template.txt` serves as an example that i
 
 - Lines 21 and 22 specifies that the BeeGFS project specification should be added to all node of the cluster 
 ```
-        [[[cluster-init cyclecloud/beegfs:default:1.0.0]]]
-        [[[cluster-init cyclecloud/beegfs:client:1.0.0]]]
+        [[[cluster-init cyclecloud/beegfs:default:1.4.1]]]
+        [[[cluster-init cyclecloud/beegfs:client:1.4.1]]]
 ```
 - Lines 25 and 26 adds two config attributes to each cluster node. `beegfs.client.cluster_name` tells the node the name of the BeeGFS cluster to mount, and `beegfs.client.mount_point` specifies where that mount point is on the nodes.
 ```
