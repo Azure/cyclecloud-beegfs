@@ -223,7 +223,7 @@ Order = 20
 	
         [[[parameter ProjVersion]]]
         Label = Project Version
-        DefaultValue = 1.4.0
+        DefaultValue = 1.4.1 
 
 
     [[parameters Advanced Networking]]
