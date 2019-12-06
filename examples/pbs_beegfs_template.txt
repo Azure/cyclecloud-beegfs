@@ -18,8 +18,8 @@ Autoscale = $Autoscale
     Region = $Region
     KeyPairLocation = ~/.ssh/cyclecloud.pem
     
-        [[[cluster-init cyclecloud/beegfs:default:1.0.0]]]
-        [[[cluster-init cyclecloud/beegfs:client:1.0.0]]]
+        [[[cluster-init cyclecloud/beegfs:default:1.4.0]]]
+        [[[cluster-init cyclecloud/beegfs:client:1.4.0]]]
 
         [[[configuration]]]
         beegfs.client.cluster_name = $BeeGFSClusterName
