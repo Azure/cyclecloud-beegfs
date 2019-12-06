@@ -37,6 +37,22 @@ service "beegfs-helperd" do
   action [:enable, :start]
 end
 
+# On some centos 7 images running RDMA networking we may need to rebuild the beegfs client to support
+# the networking options - see https://community.mellanox.com/s/article/howto-configure-and-test-beegfs-with-rdma
+bash "Update beegfs-client autobuild.conf" do
+  code <<-'EOH'
+sed -i 's/^buildArgs=.*/buildArgs=-j8 BEEGFS_OPENTK_IBVERBS=1 OFED_INCLUDE_PATH=\/usr\/src\/ofa_kernel\/default\/include\//' /etc/beegfs/beegfs-client-autobuild.conf
+  EOH
+  only_if { node['platform_family'] == 'rhel' }
+  only_if { ::File.directory? "/usr/src/ofa_kernel/default/include/" }
+end
+
+execute "Rebuild beegfs-client" do
+  command "/etc/init.d/beegfs-client rebuild"
+  only_if { node['platform_family'] == 'rhel' }
+  only_if { ::File.directory? "/usr/src/ofa_kernel/default/include/" }
+end
+
 execute "Mount BeeGFS" do
   command "echo '#{node["beegfs"]["mount_point"]} /etc/beegfs/beegfs-client.conf' > /etc/beegfs/beegfs-mounts.conf"
   not_if "grep -q '#{node["beegfs"]["mount_point"]}' /etc/beegfs/beegfs-mounts.conf"
