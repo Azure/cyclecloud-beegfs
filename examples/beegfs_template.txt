@@ -27,7 +27,7 @@ Category = Filesystems
         cyclecloud.mounts.storage.disabled = true
         cyclecloud.mounts.meta.disabled = true
 
-        [[[cluster-init beegfs:default:$ProjVersion]]]
+        [[[cluster-init cyclecloud/beegfs:default:$ProjVersion]]]
 
     [[node manager]]
     MachineType = $ManagerVMType
@@ -36,7 +36,7 @@ Category = Filesystems
         [[[configuration]]]
         cyclecloud.maintenance_converge.enabled = true
 
-        [[[cluster-init beegfs:manager:$ProjVersion]]]
+        [[[cluster-init cyclecloud/beegfs:manager:$ProjVersion]]]
 
         [[[network-interface eth0]]]
         AssociatePublicIpAddress = $UsePublicNetwork
@@ -69,7 +69,7 @@ Category = Filesystems
     Mount = storage
 
 
-    [[[cluster-init beegfs:storage:$ProjVersion]]]
+    [[[cluster-init cyclecloud/beegfs:storage:$ProjVersion]]]
 
     [[nodearray metadata]]
     MachineType = $MetadataVMType
@@ -92,7 +92,7 @@ Category = Filesystems
     meta.fs_type = ext4
     meta.raid_level = 0
 
-    [[[cluster-init beegfs:metadata:$ProjVersion]]]
+    [[[cluster-init cyclecloud/beegfs:metadata:$ProjVersion]]]
 
     [[nodearray client]]
     MachineType = $ClientVMType
@@ -100,7 +100,7 @@ Category = Filesystems
     # The initial number of cores of this type to start when the cluster starts
     InitialCount= $InitialClientCount
 
-        [[[cluster-init beegfs:client:$ProjVersion]]]
+        [[[cluster-init cyclecloud/beegfs:client:$ProjVersion]]]
 
     [[nodearray monitor]]
     MachineType = $MonitorVMType
@@ -110,7 +110,7 @@ Category = Filesystems
     InitialCount= 0
     MaxCount = 1
 
-        [[[cluster-init beegfs:mon:$ProjVersion]]]
+        [[[cluster-init cyclecloud/beegfs:mon:$ProjVersion]]]
 
 [parameters About]
 Order = 1
