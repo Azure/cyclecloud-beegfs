@@ -68,6 +68,7 @@ Category = Filesystems
     [[[cluster-init beegfs:metadata]]]
 
     [[nodearray client]]
+    ImageName = $ClientImageName
     MachineType = $ClientVMType
 
     # The initial number of cores of this type to start when the cluster starts
@@ -200,7 +201,7 @@ Order = 20
     [[parameters Software]]
     Description = "Specify the scheduling software, and base OS installed on all nodes, and optionally the cluster-init and chef versions from your Locker."
     Order = 10
-    Hidden = true
+    Hidden = false
 
         [[[parameter ImageName]]]
         Label = Base OS
@@ -209,17 +210,13 @@ Order = 20
         DefaultValue = cycle.image.centos7
         Config.Filter := Package in {"cycle.image.centos7"}
 
-        [[[parameter MasterClusterInitSpecs]]]
-        Label = Master Cluster-Init
-        DefaultValue = =undefined
-        Description = Cluster init specs to apply to the master node
-        ParameterType = Cloud.ClusterInitSpecs
-    
-        [[[parameter ExecuteClusterInitSpecs]]]
-        Label = Execute Cluster-Init
-        DefaultValue = =undefined
-        Description = Cluster init specs to apply to execute nodes
-        ParameterType = Cloud.ClusterInitSpecs
+        [[[parameter ClientImageName]]]
+        Label = Client OS
+        Description = Caution kernel header version must match release
+        ParameterType = Cloud.Image
+        Config.OS = linux
+        DefaultValue = OpenLogic:CentOS-HPC:7.4:7.4.2020101200
+
 	
 
 
