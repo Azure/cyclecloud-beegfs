@@ -94,7 +94,7 @@ Order = 1
         [[[parameter beegfs]]]
         HideLabel = true
         Config.Plugin = pico.widget.HtmlTemplateWidget
-        Config.Template = '''<table><tr><td><img src="/static/cloud/cluster/ui/ClusterIcon/beegfs.png" ></td></tr>
+        Config.Template = '''<table role="presentation"><tr><td><img alt="BeeGFS icon" src="/static/cloud/cluster/ui/ClusterIcon/beegfs.png" ></td></tr>
                             <tr><td><p>BeeGFS is a parallel cluster file system. See the <a href=\"http://www.beegfs.io/content/\" target=\"_blank\">BeeGFS project site</a> for an overview.</p></td></tr></table>'''
 
 [parameters Required Settings]
