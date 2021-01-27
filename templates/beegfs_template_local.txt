@@ -76,6 +76,10 @@ Category = Filesystems
 
         [[[cluster-init beegfs:client]]]
 
+        [[[configuration]]]
+          beegfs.repo.version = beegfs_7.2
+
+
     [[nodearray monitor]]
     MachineType = $MonitorVMType
 
@@ -215,7 +219,7 @@ Order = 20
         Description = Caution kernel header version must match release
         ParameterType = Cloud.Image
         Config.OS = linux
-        DefaultValue = OpenLogic:CentOS-HPC:7.4:7.4.2020101200
+        DefaultValue = OpenLogic:CentOS-HPC:7.6:7.6.2020062900 
 
 	
 
