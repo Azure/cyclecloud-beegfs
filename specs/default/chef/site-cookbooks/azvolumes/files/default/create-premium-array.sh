@@ -21,17 +21,8 @@ setup_storage_disks()
 
     for lun in $LUNS; do
         disk=`readlink -f /dev/disk/azure/scsi1/lun$lun`
-        fdisk -l $disk || break
-        fdisk $disk << EOF
-n
-p
-1
-
-
-t
-fd
-w
-EOF
+        parted -s $disk -- mklabel gpt
+        parted -s $disk -- mkpart primary 0% 100%
         createdPartitions="$createdPartitions ${disk}1"
     done
     sleep 10

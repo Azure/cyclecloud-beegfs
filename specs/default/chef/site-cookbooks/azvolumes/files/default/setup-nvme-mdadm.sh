@@ -30,17 +30,8 @@ setup_storage_disks()
 
     for disk in $Disks; do
         #disk=`readlink -f /dev/disk/azure/scsi1/lun$lun`
-        fdisk -l $disk || break
-        fdisk $disk << EOF
-n
-p
-1
-
-
-t
-fd
-w
-EOF
+        parted -s $disk -- mklabel gpt
+        parted -s $disk -- mkpart primary 0% 100%
         createdPartitions="$createdPartitions ${disk}p1"
 
     done
