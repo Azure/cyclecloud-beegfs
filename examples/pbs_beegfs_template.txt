@@ -24,7 +24,7 @@ Autoscale = $Autoscale
         [[[configuration]]]
         beegfs.client.cluster_name = $BeeGFSClusterName
         beegfs.client.mount_point = $BeeGFSMountPt
-
+        beegfs.repo.version = beegfs_7.2
         
 
     [[node master]]
