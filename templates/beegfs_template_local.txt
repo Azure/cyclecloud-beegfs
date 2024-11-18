@@ -37,10 +37,6 @@ Category = Filesystems
         [[[network-interface eth0]]]
         AssociatePublicIpAddress = $UsePublicNetwork
 
-        [[[input-endpoint ganglia]]]
-        PrivatePort = 8652
-        PublicPort = 8652
-
 
     [[nodearray storage]]
     MachineType = $StorageVMType
